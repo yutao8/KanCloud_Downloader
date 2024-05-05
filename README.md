@@ -26,7 +26,8 @@ $python kc_download.py -u https://www.kancloud.cn/alex_wsc/android/401651
 [+]DOwnload Success!
 ```
 
-## TODO
+## 修复
 
-- 自定义指定目录生成文件
-- 一键合成文件包括优化目录显示
+- 特殊标题造成文件保存失败问题
+- 文件检测,已存在的文件,跳过
+- 增加下载根目录download

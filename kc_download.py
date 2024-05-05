@@ -18,6 +18,7 @@ import json
 import requests
 import argparse
 import platform
+import traceback
 from bs4 import BeautifulSoup
 
 class KanCloud():
@@ -49,25 +50,29 @@ class KanCloud():
     def create(self):
         print("[+]Start KanCloud Downloader")
         print("[+]Target Article: " + self.data['config']['title'])
-        base_path = get_path()
+        base_path = get_path(self)
         mk_dir = base_path + self.flag + self.data['config']['title']
         make_path(mk_dir)
         print("[+]Downloading...")
         for table in self.data['summary']:
+            print("\t",table['index'],table['name'])
             self.isArt(table,mk_dir)
         print("[+]DOwnload Success!")
 
     def isArt(self,table,mk_dir):
         try:
             file_name = mk_dir + self.flag + table['name']
-            make_file(file_name,self.get_content(table['id']))
+            if os.path.exists(file_name)==False:
+                make_file(file_name,self.get_content(table['id']))
             if table['articles']:
-                art_path = mk_dir + self.flag + table['title']
+                art_path = mk_dir + self.flag + table['name'].replace('.md','')
                 make_path(art_path)
                 for art in table['articles']:
+                    print("\t\t",art['index'],art['name'])
                     file_path = art_path + self.flag + art['name']
-                    content = self.get_content(art['id'])
-                    make_file(file_path,content)
+                    if os.path.exists(file_path)==False:
+                        content = self.get_content(art['id'])
+                        make_file(file_path,content)
                     self.isArt(art,art_path)
         except KeyError:
             pass
@@ -79,7 +84,7 @@ class KanCloud():
         return data['article']['content']
 
 def parse_url(url):
-    base_url = re.findall('^.*\/',url)
+    base_url = re.findall('^.*\\/', url)
     
     return base_url[0]
 
@@ -89,10 +94,10 @@ def parse_html(html_data):
     
     return data
 
-def get_path():
+def get_path(self):
     dir_path = os.getcwd()
     
-    return dir_path
+    return dir_path+self.flag+"download"
 
 def make_path(path):
     isExists = os.path.exists(path)
@@ -124,5 +129,6 @@ if __name__ == "__main__":
         try:
             kc = KanCloud(args.url)
         except:
-            print("Args error! Please check the target url!")
+            print("[-]Download Failed!")
+            traceback.print_exc() 
             exit()
